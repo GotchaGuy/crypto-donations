@@ -29,7 +29,7 @@ contract CryptoDonations is Ownable {
     event CampaignChanged(uint256 campaignId);
     event Contribution(uint256 indexed campaignId, uint256 indexed amount, address indexed contributor);
 
-    error noFundsSent();
+    error noFundsSet();
     error invalidTimeGoal();
     error emptyTitle();
     error invalidCampaign();
@@ -37,7 +37,7 @@ contract CryptoDonations is Ownable {
 
     modifier validFunds(uint256 _funds) {
         if(_funds == 0) {
-            revert noFundsSent();
+            revert noFundsSet();
         }
         _;
     }
