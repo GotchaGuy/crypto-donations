@@ -1,22 +1,124 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
+// Administrator have the ability to create new campaigns. Each campaign have its name, description, time goal & money raised goal.
+// This version of a platform accepts only donations in chain's native coin.
+// Deploy smart contract to testnet of your choice (Rinkeby, Ropsten, Kovan, Goerli) and verify it on Etherscan.
+
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract Greeter {
-    string private greeting;
 
-    constructor(string memory _greeting) {
-        console.log("Deploying a Greeter with greeting:", _greeting);
-        greeting = _greeting;
+contract CryptoDonations is Ownable {
+    using Counters for Counters.Counter;
+    Counters.Counter private _campaignId;
+
+    struct Campaign {
+        uint256 timeGoal;
+        uint256 moneyRaisedGoal;
+        string title;
+        string description;
     }
 
-    function greet() public view returns (string memory) {
-        return greeting;
+    mapping(uint256 => Campaign) public campaigns;
+    mapping(uint256 => uint256) private campaignSums;
+
+
+    event CampaignCreated(uint256 campaignId);
+    event CampaignChanged(uint256 campaignId);
+    event Contribution(uint256 indexed campaignId, uint256 indexed amount, address indexed contributor);
+
+    error noFundsSent();
+    error invalidTimeGoal();
+    error emptyTitle();
+    error invalidCampaign();
+    error inactiveCampaign();
+
+    modifier validFunds(uint256 _funds) {
+        if(_funds == 0) {
+            revert noFundsSent();
+        }
+        _;
     }
 
-    function setGreeting(string memory _greeting) public {
-        console.log("Changing greeting from '%s' to '%s'", greeting, _greeting);
-        greeting = _greeting;
+    modifier validTimeGoal(uint256 _timeGoal) {
+        if(_timeGoal <= block.timestamp) {
+            revert invalidTimeGoal();
+        }
+        _;
     }
+
+    modifier validTitle(string calldata _title) {
+        if(keccak256(abi.encodePacked(_title)) == keccak256(abi.encodePacked(""))) {
+            revert emptyTitle();
+        }
+        _;
+    }
+
+    modifier validCampaign(uint256 _id) {
+        if(campaigns[_id].timeGoal == 0) {
+            revert invalidCampaign();
+        }
+        _;
+    }
+
+    modifier activeCampaign(uint256 _id) {
+        if(campaigns[_id].timeGoal <= block.timestamp) {
+            revert inactiveCampaign();
+        }
+        _;
+    }
+
+    function getCampaignSum(uint256 campaignId) public view validCampaign(campaignId) returns(uint256){
+       return campaignSums[campaignId];
+    }
+
+    function createCampaign(
+        uint256 _timeGoal,
+        uint256 _moneyRaisedGoal,
+        string calldata _title,
+        string calldata _description
+    ) external onlyOwner validFunds(_moneyRaisedGoal) validTimeGoal(_timeGoal) validTitle(_title) {
+        uint256 campaignId = _campaignId.current();
+        campaigns[campaignId] = Campaign(_timeGoal, _moneyRaisedGoal, _title, _description);
+
+        emit CampaignCreated(campaignId);
+
+        _campaignId.increment();
+    }
+
+    function changeCampaign(
+        uint256 campaignId,
+        uint256 _timeGoal,
+        uint256 _moneyRaisedGoal,
+        string calldata _title,
+        string calldata _description
+    ) external onlyOwner {
+        campaigns[campaignId] = Campaign(_timeGoal, _moneyRaisedGoal, _title, _description);
+
+        emit CampaignChanged(campaignId);
+
+    }
+
+
+    function donate(uint256 campaignId) external payable validFunds(msg.value) validCampaign(campaignId) activeCampaign(campaignId) {
+        campaignSums[campaignId] += msg.value;
+
+        emit Contribution(campaignId, msg.value, msg.sender);
+    }
+
+    // constructor(string memory _greeting) {
+    //     console.log("Deploying a Greeter with greeting:", _greeting);
+    //     greeting = _greeting;
+    // }
+
+    // function greet() public view returns (string memory) {
+    //     return greeting;
+    // }
+
+    // function setGreeting(string memory _greeting) public {
+    //     console.log("Changing greeting from '%s' to '%s'", greeting, _greeting);
+    //     greeting = _greeting;
+    // }
 }
