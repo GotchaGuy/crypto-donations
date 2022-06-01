@@ -21,6 +21,8 @@ contract CryptoDonations is Ownable {
         string description;
     }
 
+    bool internal locked;
+
     mapping(uint256 => Campaign) public campaigns;
     mapping(uint256 => uint256) private campaignSums;
 
@@ -29,6 +31,7 @@ contract CryptoDonations is Ownable {
     event CampaignChanged(uint256 campaignId);
     event CampaignGoalMet(uint256 campaignId);
     event Contribution(uint256 indexed campaignId, uint256 indexed amount, address indexed contributor);
+    event WithdrawStatus(bool sent, uint256 amount);
 
     error noFundsSet();
     error invalidTimeGoal();
@@ -36,6 +39,8 @@ contract CryptoDonations is Ownable {
     error invalidCampaign();
     error campaignIsInactive();
     error campaignIsActive();
+    error withdrawAmountTooHigh();
+    error reentrancyAttempt();
 
     modifier validFunds(uint256 _funds) {
         if(_funds == 0) {
@@ -77,6 +82,16 @@ contract CryptoDonations is Ownable {
             revert campaignIsActive();
         }
         _;
+    }
+
+    modifier noReentrant() {
+        if (locked) {
+            revert reentrancyAttempt();
+        }
+        // require(!locked, "No re-entrancy");
+        locked = true;
+        _;
+        locked = false;
     }
 
     function getCampaignSum(uint256 campaignId) public view validCampaign(campaignId) returns(uint256){
@@ -121,9 +136,21 @@ contract CryptoDonations is Ownable {
         }
     }
 
-    function withdraw(uint256 campaignId, address payable _to) external payable onlyOwner validCampaign(campaignId) inactiveCampaign(campaignId) {
+    function withdraw(uint256 campaignId, address payable _to, uint256 _amount) external payable onlyOwner validCampaign(campaignId) inactiveCampaign(campaignId) noReentrant{
 
+        uint256 sum = campaignSums[campaignId];
 
+        if(_amount > sum) {
+            revert withdrawAmountTooHigh();
+        }
+
+        (bool sent, ) = _to.call{value: _amount}("");
+
+        if(sent){
+            campaignSums[campaignId] -= _amount;
+        }
+
+        emit WithdrawStatus(sent, _amount);
     }
 
     // constructor(string memory _greeting) {
