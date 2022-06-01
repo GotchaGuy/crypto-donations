@@ -10,7 +10,7 @@ describe("CryptoDonations", function () {
   let cryptoDonationsContract: CryptoDonations;
   let owner: { address: string; };
   let addr1: string | Signer | Provider;
-  let addr2: string | Signer | Provider;
+  let addr2: string | Signer;
   let addrs;
 
   
@@ -215,17 +215,33 @@ describe("CryptoDonations", function () {
       );
 
       await donateFundsTx1.wait();
-
-      //....
-
+        //has to be inactive campaign in order to work
+      const finalAddress = typeof addr2 === "string" ? addr2 : await addr2.getAddress();
+      expect(await cryptoDonationsContract.withdraw(
+        constants.Zero, finalAddress, 50000
+      ))
+      .to.emit(cryptoDonationsContract, `WithdrawStatus`)
+        .withArgs(true, 50000, constants.Zero);
     });
 
     it("Should revert if campaign is active", async function () {
+      const createCampaignTx = await cryptoDonationsContract.createCampaign(
+        timeGoal, moneyRaisedGoal, title, description
+      );
+  
+      await createCampaignTx.wait();
 
-    });
+      const donateFundsTx1 = await cryptoDonationsContract.connect(addr1).donate(
+        constants.Zero, { value: ethers.utils.parseEther("1") }
+      );
 
-    it("Should revert in case of reentrancy", async function () {
-
+      await donateFundsTx1.wait();
+        //has to be inactive campaign in order to work
+      const finalAddress = typeof addr2 === "string" ? addr2 : await addr2.getAddress();
+      await expect(cryptoDonationsContract.withdraw(
+        constants.Zero, finalAddress, 50000
+      ))
+      .to.be.revertedWith(`campaignIsActive`);
     });
 
   });

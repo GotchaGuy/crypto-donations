@@ -31,7 +31,7 @@ contract CryptoDonations is Ownable {
     event CampaignChanged(uint256 campaignId);
     event CampaignGoalMet(uint256 campaignId);
     event Contribution(uint256 indexed campaignId, uint256 indexed amount, address indexed contributor);
-    event WithdrawStatus(bool sent, uint256 amount);
+    event WithdrawStatus(bool sent, uint256 amount, uint256 campaignId);
 
     error noFundsSet();
     error invalidTimeGoal();
@@ -125,7 +125,6 @@ contract CryptoDonations is Ownable {
 
     }
 
-
     function donate(uint256 campaignId) external payable validFunds(msg.value) validCampaign(campaignId) activeCampaign(campaignId) {
         campaignSums[campaignId] += msg.value;
 
@@ -147,7 +146,7 @@ contract CryptoDonations is Ownable {
         if(sent){
             campaignSums[campaignId] -= _amount;
         }
-        emit WithdrawStatus(sent, _amount);
+        emit WithdrawStatus(sent, _amount, campaignId);
     }
 
 }
