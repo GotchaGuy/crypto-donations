@@ -27,13 +27,15 @@ contract CryptoDonations is Ownable {
 
     event CampaignCreated(uint256 campaignId);
     event CampaignChanged(uint256 campaignId);
+    event CampaignGoalMet(uint256 campaignId);
     event Contribution(uint256 indexed campaignId, uint256 indexed amount, address indexed contributor);
 
     error noFundsSet();
     error invalidTimeGoal();
     error emptyTitle();
     error invalidCampaign();
-    error inactiveCampaign();
+    error campaignIsInactive();
+    error campaignIsActive();
 
     modifier validFunds(uint256 _funds) {
         if(_funds == 0) {
@@ -65,7 +67,14 @@ contract CryptoDonations is Ownable {
 
     modifier activeCampaign(uint256 _id) {
         if(campaigns[_id].timeGoal <= block.timestamp) {
-            revert inactiveCampaign();
+            revert campaignIsInactive();
+        }
+        _;
+    }
+
+    modifier inactiveCampaign(uint256 _id) {
+        if(campaigns[_id].timeGoal > block.timestamp) {
+            revert campaignIsActive();
         }
         _;
     }
@@ -94,7 +103,7 @@ contract CryptoDonations is Ownable {
         uint256 _moneyRaisedGoal,
         string calldata _title,
         string calldata _description
-    ) external onlyOwner {
+    ) external onlyOwner validCampaign(campaignId) validFunds(_moneyRaisedGoal) validTimeGoal(_timeGoal) validTitle(_title) {
         campaigns[campaignId] = Campaign(_timeGoal, _moneyRaisedGoal, _title, _description);
 
         emit CampaignChanged(campaignId);
@@ -106,6 +115,15 @@ contract CryptoDonations is Ownable {
         campaignSums[campaignId] += msg.value;
 
         emit Contribution(campaignId, msg.value, msg.sender);
+
+        if(campaignSums[campaignId] >= campaigns[campaignId].moneyRaisedGoal) {
+            emit CampaignGoalMet(campaignId);
+        }
+    }
+
+    function withdraw(uint256 campaignId, address payable _to) external payable onlyOwner validCampaign(campaignId) inactiveCampaign(campaignId) {
+
+
     }
 
     // constructor(string memory _greeting) {
