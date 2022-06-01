@@ -137,9 +137,7 @@ contract CryptoDonations is Ownable {
     }
 
     function withdraw(uint256 campaignId, address payable _to, uint256 _amount) external payable onlyOwner validCampaign(campaignId) inactiveCampaign(campaignId) noReentrant{
-
         uint256 sum = campaignSums[campaignId];
-
         if(_amount > sum) {
             revert withdrawAmountTooHigh();
         }
@@ -149,21 +147,7 @@ contract CryptoDonations is Ownable {
         if(sent){
             campaignSums[campaignId] -= _amount;
         }
-
         emit WithdrawStatus(sent, _amount);
     }
 
-    // constructor(string memory _greeting) {
-    //     console.log("Deploying a Greeter with greeting:", _greeting);
-    //     greeting = _greeting;
-    // }
-
-    // function greet() public view returns (string memory) {
-    //     return greeting;
-    // }
-
-    // function setGreeting(string memory _greeting) public {
-    //     console.log("Changing greeting from '%s' to '%s'", greeting, _greeting);
-    //     greeting = _greeting;
-    // }
 }

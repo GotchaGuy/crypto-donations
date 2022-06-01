@@ -35,8 +35,9 @@ describe("CryptoDonations", function () {
   describe("Campaign creation and editing", async function () {
     // timeGoal is 1 week from now = current time in seconds + one week in seconds(604800s)
     const oneWeek = 604800;
-    const timeGoal = Math.round(new Date().getTime() / 1000) + oneWeek;
-    const moneyRaisedGoal = 500;
+    const currentTime = Math.round(new Date().getTime() / 1000);
+    const timeGoal = currentTime + oneWeek;
+    const moneyRaisedGoal = 5000;
     const title: string = "May Charity Campaign";
     const description: string = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum ligula felis, tristique at sollicitudin et, tempus non enim. Vivamus tincidunt pharetra lectus nec ornare. Curabitur mauris ex, mattis vel enim quis, venenatis tempor dolor. Duis efficitur quam ut enim gravida vestibulum. Aliquam ullamcorper, libero non accumsan ornare, justo nisi semper mauris, non tempor diam risus non neque. Cras et aliquam sapien. Curabitur non purus bibendum, auctor elit a, ultricies magna. Duis nec nisi vehicula augue blandit suscipit vitae in ante. Aliquam aliquet elit dolor, mattis bibendum quam laoreet vitae. Mauris pharetra elit et consectetur accumsan";
 
@@ -176,7 +177,7 @@ describe("CryptoDonations", function () {
 
     });
 
-    it("Campaign should receive funds from contributor", async function () {
+    it("Should emit special event if money goal is surpassed", async function () {
       const createCampaignTx = await cryptoDonationsContract.createCampaign(
         timeGoal, moneyRaisedGoal, title, description
       );
@@ -188,6 +189,43 @@ describe("CryptoDonations", function () {
       ))
       .to.emit(cryptoDonationsContract, `CampaignGoalMet`)
         .withArgs(constants.Zero);
+    });
+
+  });
+
+  describe("Withdrawing funds from campaigns", async function () {
+    // timeGoal is 1 week from now = current time in seconds + one week in seconds(604800s)
+    const oneWeek = 604800;
+    const currentTime = Math.round(new Date().getTime() / 1000);
+    const timeGoal = currentTime + oneWeek;
+    const moneyRaisedGoal = 5000;
+    const title: string = "May Charity Campaign";
+    const description: string = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum ligula felis, tristique at sollicitudin et, tempus non enim. Vivamus tincidunt pharetra lectus nec ornare. Curabitur mauris ex, mattis vel enim quis, venenatis tempor dolor. Duis efficitur quam ut enim gravida vestibulum. Aliquam ullamcorper, libero non accumsan ornare, justo nisi semper mauris, non tempor diam risus non neque. Cras et aliquam sapien. Curabitur non purus bibendum, auctor elit a, ultricies magna. Duis nec nisi vehicula augue blandit suscipit vitae in ante. Aliquam aliquet elit dolor, mattis bibendum quam laoreet vitae. Mauris pharetra elit et consectetur accumsan";
+
+
+    it("Should withdraw funds from campaign to address", async function () {
+      const createCampaignTx = await cryptoDonationsContract.createCampaign(
+        timeGoal, moneyRaisedGoal, title, description
+      );
+  
+      await createCampaignTx.wait();
+
+      const donateFundsTx1 = await cryptoDonationsContract.connect(addr1).donate(
+        constants.Zero, { value: ethers.utils.parseEther("1") }
+      );
+
+      await donateFundsTx1.wait();
+
+      //....
+
+    });
+
+    it("Should revert if campaign is active", async function () {
+
+    });
+
+    it("Should revert in case of reentrancy", async function () {
+
     });
 
   });
