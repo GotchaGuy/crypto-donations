@@ -13,13 +13,19 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
+  const [deployer] = await ethers.getSigners();
+
+  console.log("Deploying contracts with the account:", deployer.address);
+
+  console.log("Account balance:", (await deployer.getBalance()).toString());
+
   // We get the contract to deploy
-  const CryptoDonations = await ethers.getContractFactory("Greeter");
-  const cryptoDonations = await CryptoDonations.deploy("Hello, Hardhat!");
+  const CryptoDonations = await ethers.getContractFactory("CryptoDonations");
+  const cryptoDonations = await CryptoDonations.deploy();
 
   await cryptoDonations.deployed();
 
-  console.log("Greeter deployed to:", cryptoDonations.address);
+  console.log("CrpytoDonations deployed to: ", cryptoDonations.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
