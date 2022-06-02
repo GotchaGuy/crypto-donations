@@ -137,19 +137,22 @@ describe("CryptoDonations", function () {
         .withArgs(constants.Zero, 1000000000000000000, addr1);
     });
 
-    // it("Should revert if campaign is inactive", async function () {
-    //   const createCampaignTx = await cryptoDonationsContract.createCampaign(
-    //     currentTime + 5, moneyRaisedGoal, title, description
-    //   );
-  
-    //   await createCampaignTx.wait();
+    it("Should revert if campaign is inactive", async function () {
+      const createCampaignTx = await cryptoDonationsContract.createCampaign(
+        currentTime + 3600, moneyRaisedGoal, title, description
+      );
 
-    //   await expect( cryptoDonationsContract.connect(addr2)
-    //   .donate(
-    //     constants.Zero, { value: ethers.utils.parseEther("1") }
-    //   ))
-    //   .to.be.revertedWith(`campaignIsInactive`);
-    // });
+      await createCampaignTx.wait();
+
+      await ethers.provider.send("evm_increaseTime", [7200]); // add 7200 seconds
+      // await ethers.provider.send("evm_mine", [7200]); // works either way
+
+      await expect( cryptoDonationsContract.connect(addr2)
+      .donate(
+        constants.Zero, { value: ethers.utils.parseEther("1") }
+      ))
+      .to.be.revertedWith(`campaignIsInactive`);
+    });
 
     it("CampaignSum should stack all contributed funds", async function () {
       const createCampaignTx = await cryptoDonationsContract.createCampaign(
@@ -205,7 +208,7 @@ describe("CryptoDonations", function () {
 
     it("Should withdraw funds from campaign to address", async function () {
       const createCampaignTx = await cryptoDonationsContract.createCampaign(
-        timeGoal, moneyRaisedGoal, title, description
+        currentTime + 10800, moneyRaisedGoal, title, description
       );
   
       await createCampaignTx.wait();
@@ -215,13 +218,18 @@ describe("CryptoDonations", function () {
       );
 
       await donateFundsTx1.wait();
-        //has to be inactive campaign in order to work
+
+      //has to be inactive campaign in order to work
+      await ethers.provider.send("evm_increaseTime", [14600]); // add 7200 seconds
+
+
       const finalAddress = typeof addr2 === "string" ? addr2 : await addr2.getAddress();
       expect(await cryptoDonationsContract.withdraw(
         constants.Zero, finalAddress, 50000
       ))
       .to.emit(cryptoDonationsContract, `WithdrawStatus`)
         .withArgs(true, 50000, constants.Zero);
+
     });
 
     it("Should revert if campaign is active", async function () {

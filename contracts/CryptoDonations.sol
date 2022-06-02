@@ -1,19 +1,23 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-// Administrator have the ability to create new campaigns. Each campaign have its name, description, time goal & money raised goal.
-// This version of a platform accepts only donations in chain's native coin.
-// Deploy smart contract to testnet of your choice (Rinkeby, Ropsten, Kovan, Goerli) and verify it on Etherscan.
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+/// @title A Crypto Donations contract
+/// @notice A Smart Contract for donating crypto assets to a specific campaign
 
 contract CryptoDonations is Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _campaignId;
 
+/// @notice Campaign struct containing raising deadline, raising goal, its title, and description
+/// @param timeGoal campaign's deadline to raise moneyRaisedGoal
+/// @param moneyRaisedGoal campaign's aimed amount of money to raise until timeGoal
+/// @param title campaign title
+/// @param description description of campaign and its purpose
     struct Campaign {
         uint256 timeGoal;
         uint256 moneyRaisedGoal;
@@ -21,6 +25,7 @@ contract CryptoDonations is Ownable {
         string description;
     }
 
+/// @notice boolean for stopping reentrancy during withdrawal
     bool internal locked;
 
     mapping(uint256 => Campaign) public campaigns;
@@ -94,10 +99,16 @@ contract CryptoDonations is Ownable {
         locked = false;
     }
 
-    function getCampaignSum(uint256 campaignId) public view validCampaign(campaignId) returns(uint256){
+    /// @notice Returns current available raised funds for a specific campaign
+    function getCampaignSum(uint256 campaignId) public view validCampaign(campaignId) returns(uint256 sum){
        return campaignSums[campaignId];
     }
 
+    /// @notice SC Admin can create campaign structs
+    /// @param _timeGoal campaign's deadline to raise moneyRaisedGoal
+    /// @param _moneyRaisedGoal campaign's aimed amount of money to raise until timeGoal
+    /// @param _title campaign title
+    /// @param _description description of campaign and its purpose
     function createCampaign(
         uint256 _timeGoal,
         uint256 _moneyRaisedGoal,
@@ -112,6 +123,8 @@ contract CryptoDonations is Ownable {
         _campaignId.increment();
     }
 
+    /// @notice SC Admin can change any campaign struct
+    /// @param campaignId ID of campaign intended to be changed
     function changeCampaign(
         uint256 campaignId,
         uint256 _timeGoal,
@@ -125,6 +138,8 @@ contract CryptoDonations is Ownable {
 
     }
 
+    /// @notice Anyone can donate ETH to an active campaign
+    /// @param campaignId ID of campaign intended to receive sent ETH
     function donate(uint256 campaignId) external payable validFunds(msg.value) validCampaign(campaignId) activeCampaign(campaignId) {
         campaignSums[campaignId] += msg.value;
 
@@ -135,6 +150,10 @@ contract CryptoDonations is Ownable {
         }
     }
 
+    /// @notice Admin can withdraw any amount raised from a campaign and send it to another address
+    /// @param campaignId ID of campaign intended to withdraw ETH from
+    /// @param _to address intended to receive funds
+    /// @param _amount amount of ETH to withdraw
     function withdraw(uint256 campaignId, address payable _to, uint256 _amount) external payable onlyOwner validCampaign(campaignId) inactiveCampaign(campaignId) noReentrant{
         uint256 sum = campaignSums[campaignId];
         if(_amount > sum) {
