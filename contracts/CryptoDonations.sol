@@ -6,12 +6,8 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-/// @title A Crypto Donations contract
-/// @notice A Smart Contract for donating crypto assets to a specific campaign
 
-contract CryptoDonations is Ownable {
-    using Counters for Counters.Counter;
-    Counters.Counter private _campaignId;
+interface ICryptoDonations {
 
 /// @notice Campaign struct containing raising deadline, raising goal, its title, and description
 /// @param timeGoal campaign's deadline to raise moneyRaisedGoal
@@ -25,17 +21,29 @@ contract CryptoDonations is Ownable {
         string description;
     }
 
-/// @notice boolean for stopping reentrancy during withdrawal
-    bool internal locked;
-
-    mapping(uint256 => Campaign) public campaigns;
-    mapping(uint256 => uint256) private campaignSums;
-
-
+    /**     
+     * @dev Emitted when a campaign is created.     
+     */
     event CampaignCreated(uint256 campaignId);
+
+    /**     
+     * @dev Emitted when a campaign is changed.     
+     */
     event CampaignChanged(uint256 campaignId);
+
+    /**     
+     * @dev Emitted when a campaign's goal is met with enough funds or more.     
+     */
     event CampaignGoalMet(uint256 campaignId);
+
+    /**     
+     * @dev Emitted when anyone donates.     
+     */
     event Contribution(uint256 indexed campaignId, uint256 indexed amount, address indexed contributor);
+    
+    /**     
+     * @dev Emitted when admin withdraws specific amount of funds from a campaign.     
+     */
     event WithdrawStatus(bool sent, uint256 amount, uint256 campaignId);
 
     error noFundsSet();
@@ -46,6 +54,41 @@ contract CryptoDonations is Ownable {
     error campaignIsActive();
     error withdrawAmountTooHigh();
     error reentrancyAttempt();
+
+    function getCampaignSum(uint256 campaignId) external view returns(uint256 sum);
+
+    function createCampaign(
+        uint256 _timeGoal,
+        uint256 _moneyRaisedGoal,
+        string calldata _title,
+        string calldata _description
+    ) external;
+
+    function changeCampaign(
+        uint256 campaignId,
+        uint256 _timeGoal,
+        uint256 _moneyRaisedGoal,
+        string calldata _title,
+        string calldata _description
+    ) external;
+
+    function donate(uint256 campaignId) external payable;
+
+    function withdraw(uint256 campaignId, address payable _to, uint256 _amount) external payable;
+}
+
+
+/// @title A Crypto Donations contract
+/// @notice A Smart Contract for donating crypto assets to a specific campaign
+contract CryptoDonations is Ownable, ICryptoDonations {
+    using Counters for Counters.Counter;
+    Counters.Counter private _campaignId;
+
+/// @notice boolean for stopping reentrancy during withdrawal
+    bool internal locked;
+
+    mapping(uint256 => Campaign) public campaigns;
+    mapping(uint256 => uint256) private campaignSums;
 
     modifier validFunds(uint256 _funds) {
         if(_funds == 0) {
@@ -100,7 +143,7 @@ contract CryptoDonations is Ownable {
     }
 
     /// @notice Returns current available raised funds for a specific campaign
-    function getCampaignSum(uint256 campaignId) public view validCampaign(campaignId) returns(uint256 sum){
+    function getCampaignSum(uint256 campaignId) public view override validCampaign(campaignId) returns(uint256 sum){
        return campaignSums[campaignId];
     }
 
@@ -114,7 +157,7 @@ contract CryptoDonations is Ownable {
         uint256 _moneyRaisedGoal,
         string calldata _title,
         string calldata _description
-    ) external onlyOwner validFunds(_moneyRaisedGoal) validTimeGoal(_timeGoal) validTitle(_title) {
+    ) external override onlyOwner validFunds(_moneyRaisedGoal) validTimeGoal(_timeGoal) validTitle(_title) {
         uint256 campaignId = _campaignId.current();
         campaigns[campaignId] = Campaign(_timeGoal, _moneyRaisedGoal, _title, _description);
 
@@ -131,7 +174,7 @@ contract CryptoDonations is Ownable {
         uint256 _moneyRaisedGoal,
         string calldata _title,
         string calldata _description
-    ) external onlyOwner validCampaign(campaignId) validFunds(_moneyRaisedGoal) validTimeGoal(_timeGoal) validTitle(_title) {
+    ) external override onlyOwner validCampaign(campaignId) validFunds(_moneyRaisedGoal) validTimeGoal(_timeGoal) validTitle(_title) {
         campaigns[campaignId] = Campaign(_timeGoal, _moneyRaisedGoal, _title, _description);
 
         emit CampaignChanged(campaignId);
@@ -140,7 +183,7 @@ contract CryptoDonations is Ownable {
 
     /// @notice Anyone can donate ETH to an active campaign
     /// @param campaignId ID of campaign intended to receive sent ETH
-    function donate(uint256 campaignId) external payable validFunds(msg.value) validCampaign(campaignId) activeCampaign(campaignId) {
+    function donate(uint256 campaignId) external payable override validFunds(msg.value) validCampaign(campaignId) activeCampaign(campaignId) {
         campaignSums[campaignId] += msg.value;
 
         emit Contribution(campaignId, msg.value, msg.sender);
@@ -154,7 +197,7 @@ contract CryptoDonations is Ownable {
     /// @param campaignId ID of campaign intended to withdraw ETH from
     /// @param _to address intended to receive funds
     /// @param _amount amount of ETH to withdraw
-    function withdraw(uint256 campaignId, address payable _to, uint256 _amount) external payable onlyOwner validCampaign(campaignId) inactiveCampaign(campaignId) noReentrant{
+    function withdraw(uint256 campaignId, address payable _to, uint256 _amount) external payable override onlyOwner validCampaign(campaignId) inactiveCampaign(campaignId) noReentrant{
         uint256 sum = campaignSums[campaignId];
         if(_amount > sum) {
             revert withdrawAmountTooHigh();
