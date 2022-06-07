@@ -6,7 +6,6 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-
 interface ICryptoDonations {
 
 /// @notice Campaign struct containing raising deadline, raising goal, its title, and description
@@ -89,6 +88,11 @@ contract CryptoDonations is Ownable, ICryptoDonations {
 
     mapping(uint256 => Campaign) public campaigns;
     mapping(uint256 => uint256) private campaignSums;
+
+/// @notice via campaign ID and contributor address, amount contributed to a specific campaign from a specific user can be obtained
+    mapping(uint256 => mapping(address => uint256)) private campaignContributions;
+
+
 
     modifier validFunds(uint256 _funds) {
         if(_funds == 0) {
@@ -185,9 +189,11 @@ contract CryptoDonations is Ownable, ICryptoDonations {
     /// @param campaignId ID of campaign intended to receive sent ETH
     function donate(uint256 campaignId) external payable override validFunds(msg.value) validCampaign(campaignId) activeCampaign(campaignId) {
         campaignSums[campaignId] += msg.value;
+        campaignContributions[campaignId][msg.sender] += msg.value;
 
         emit Contribution(campaignId, msg.value, msg.sender);
 
+        // razmisljam se ovde da dodam jedan bool koji ce biti true ako se opali goalmet event - da se ne bi opalio event svaku put kad se doda suma koja opet prelazi cilj
         if(campaignSums[campaignId] >= campaigns[campaignId].moneyRaisedGoal) {
             emit CampaignGoalMet(campaignId);
         }
