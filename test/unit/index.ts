@@ -3,6 +3,10 @@ import { unitCryptoDonationsFixture, unitDNPTFixture } from "../shared/fixtures"
 import { Mocks, Signers } from "../shared/types";
 
 import { shouldDeployCD } from "./CryptoDonations/CryptoDonationsShouldBeDeployed"; 
+import { shouldCreateCampaign } from "./CryptoDonations/CryptoDonationsShouldCreateCampaign"; 
+import { shouldChangeCampaign } from "./CryptoDonations/CryptoDonationsShouldChangeCampaign"; 
+import { shouldReceiveETH } from "./CryptoDonations/CryptoDonationsShouldReceiveETH";
+import { shouldWithdrawETH } from "./CryptoDonations/CryptoDonationsShouldWithdrawETH";
 
 import { shouldDeployDNPT } from "./DNPT/DNPTShouldBeDeployed"; 
 
@@ -30,6 +34,11 @@ describe(`Unit tests`, async () => {
     });
 
     shouldDeployCD();
+    shouldCreateCampaign();
+    shouldChangeCampaign();
+    shouldReceiveETH();
+    shouldWithdrawETH();
+
   });
 
   describe(`DNPT - Gift NFT Contract`, async () => {

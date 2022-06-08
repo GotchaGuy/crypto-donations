@@ -8,5 +8,9 @@ export const shouldDeployCD = (): void => {
       expect(this.cryptoDonations.address).to.be.properAddress;
     });
 
+    it("Should set the right owner", async function () {
+        expect(await this.cryptoDonations.owner()).to.equal(this.signers.deployer.address);
+      });
+
   });
 };
