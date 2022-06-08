@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-string constant name = "Donypto";
+string constant name = "Donypto Tokens";
 string constant symbol = "DNPT";
 // string constant uri = "https://ipfs.io/ipfs/QmbN8UPLMXPqmroWXKXcp8PzZC161dcrf14jkNfCFJ2dkm?filename=nft.json";
 

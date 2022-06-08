@@ -2,7 +2,7 @@ import { Fixture, MockContract } from "ethereum-waffle";
 import { Wallet } from "@ethersproject/wallet";
 import { CryptoDonations } from "../../typechain";
 import { DNPT } from "../../typechain";
-
+    
 declare module "mocha" {
   export interface Context {
     loadFixture: <T>(fixture: Fixture<T>) => Promise<T>;
@@ -21,5 +21,5 @@ export interface Signers {
 }
 
 export interface Mocks {
-  mockUsdc: MockContract;
+  mockGiftNFT: MockContract;
 }
