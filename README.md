@@ -1,5 +1,5 @@
 # Task-2
 
-Write a smart contract for a Crypto Donations platform using Remix IDE. One Solidity file will be perfect for now. Administrator have the ability to create new campaigns. Each campaign have its name, description, time goal & money raised goal. This version of a platform accepts only donations in chain's native coin. Deploy smart contract to testnet of your choice (Rinkeby, Ropsten, Kovan, Goerli) and verify it on Etherscan.
+Extend the previous contract using Hardhat. All the functions should be listed in the interface that main smart contract needs to implement. Create a NFT - Non Fungible Token following ERC-721 standard. Each User after its first donation as a gesture of gratitude receives an NFT you created. Deploy smart contracts to testnet of your choice and verify them on Etherscan.
 
 # Etherscan verification
