@@ -14,12 +14,12 @@ describe("DNPT", function () {
 
     let DNPT;
     let dnptContract: DNPT;
-    let owner: { address: string; };
+    // let owner: { address: string; };
     // let addr1: string | Signer;
-    let addr2: string | Signer;
-    // let owner: SignerWithAddress;
+    // let addr2: string | Signer;
+    let owner: SignerWithAddress;
     let addr1: SignerWithAddress;
-    // let addr2: SignerWithAddress;
+    let addr2: SignerWithAddress;
     let addrs;
   
   
