@@ -9,6 +9,7 @@ import { shouldReceiveETH } from "./CryptoDonations/CryptoDonationsShouldReceive
 import { shouldWithdrawETH } from "./CryptoDonations/CryptoDonationsShouldWithdrawETH";
 
 import { shouldDeployDNPT } from "./DNPT/DNPTShouldBeDeployed"; 
+import { shouldMintNewNFTs } from "./DNPT/DNPTShouldMintNewNFTs";
 
 describe(`Unit tests`, async () => {
   before(async function () {
@@ -52,5 +53,6 @@ describe(`Unit tests`, async () => {
     });
 
     shouldDeployDNPT();
+    shouldMintNewNFTs();
   });
 });

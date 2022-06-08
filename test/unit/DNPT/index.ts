@@ -75,13 +75,4 @@ describe("DNPT", function () {
   
     });
 
-    describe("Title", function () {
-      
-  
-      it("Should lorem ipsum", async function () {
-        expect(await dnptContract.owner()).to.equal(owner.address);
-      });
-  
-    });
-
 });

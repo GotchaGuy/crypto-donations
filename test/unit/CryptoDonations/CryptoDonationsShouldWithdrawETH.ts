@@ -26,6 +26,10 @@ export const shouldWithdrawETH = (): void => {
         constants.Zero, { value: ethers.utils.parseEther("1") }
       );
 
+      const aliceBalanceBefore = ethers.utils.formatUnits(await this.signers.alice.getBalance(), "ether");  
+      console.log(aliceBalanceBefore);
+
+
       await donateFundsTx1.wait();
 
       //has to be inactive campaign in order to work -> current time has to be after the timeGoal
@@ -37,6 +41,10 @@ export const shouldWithdrawETH = (): void => {
       .to.emit(this.cryptoDonations, `WithdrawStatus`)
         .withArgs(true, 50000, constants.Zero);
 
+        const aliceBalanceAfter = ethers.utils.formatUnits(await this.signers.alice.getBalance(), "ether"); 
+        console.log(aliceBalanceAfter);
+        
+        // expect(parseFloat(aliceBalanceAfter) - parseFloat(aliceBalanceBefore)).to.equal(50000);
     });
 
     it("Should revert if campaign is active", async function () {
