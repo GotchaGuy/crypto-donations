@@ -22,4 +22,6 @@ export interface Signers {
 
 export interface Mocks {
   mockGiftNFT: MockContract;
+  mockCryptoDonations: MockContract;
+
 }

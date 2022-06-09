@@ -17,6 +17,8 @@ export const shouldReceiveETH = (): void => {
 
 
     it("Campaign should receive funds from contributor", async function () {
+      await this.mocks.mockGiftNFT.mintToken.returns(true);
+
       const createCampaignTx = await this.cryptoDonations.createCampaign(
         timeGoal, moneyRaisedGoal, title, description
       );
@@ -27,7 +29,7 @@ export const shouldReceiveETH = (): void => {
         constants.Zero, { value: ethers.utils.parseEther("1") }
       ))
       .to.emit(this.cryptoDonations, `Contributor`)
-        .withArgs(constants.Zero, 1000000000000000000, this.signers.alice);
+        .withArgs(constants.Zero, 1000000000000000000, this.signers.alice, true);
     });
 
     it("Should revert if campaign is inactive", async function () {

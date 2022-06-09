@@ -20,6 +20,8 @@ describe(`Unit tests`, async () => {
     this.signers.deployer = wallets[0];
     this.signers.alice = wallets[1];
     this.signers.bob = wallets[2];
+    this.signers.garry = wallets[3];
+
 
     this.loadFixture = waffle.createFixtureLoader(wallets);
   });
@@ -37,19 +39,19 @@ describe(`Unit tests`, async () => {
     shouldDeployCD();
     shouldCreateCampaign();
     shouldChangeCampaign();
-    shouldReceiveETH();
-    shouldWithdrawETH();
+    // shouldReceiveETH();
+    // shouldWithdrawETH();
 
   });
 
   describe(`DNPT - Gift NFT Contract`, async () => {
     beforeEach(async function () {
-      const { dnpt } = await this.loadFixture(unitDNPTFixture);
+      const { dnpt, mockCryptoDonations } = await this.loadFixture(unitDNPTFixture);
 
       this.dnpt = dnpt;
 
-      // this.mocks = {} as Mocks;
-      // this.mocks.mockCryptoDonations = mockCryptoDonations;
+      this.mocks = {} as Mocks;
+      this.mocks.mockCryptoDonations = mockCryptoDonations;
     });
 
     shouldDeployDNPT();

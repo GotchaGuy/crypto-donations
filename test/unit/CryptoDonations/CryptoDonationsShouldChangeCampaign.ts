@@ -38,7 +38,7 @@ export const shouldChangeCampaign = (): void => {
     });
 
     it("Change campaign should revert if campaign id is invalid", async function () {
-      await expect( this.cryptoDonations.changeCampaign(
+      await expect(this.cryptoDonations.changeCampaign(
         constants.Zero, timeGoal, moneyRaisedGoal, title, description
       ))
       .to.be.revertedWith(`invalidCampaign`);

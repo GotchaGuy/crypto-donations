@@ -9,6 +9,10 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 // import { DNPTABI } from "../artifacts/contracts/DNPT.sol/DNPT.json";
 import "./DNPT.sol";
 
+interface IDNPT {
+        function mintToken(address recipient) external returns(bool minted);
+}
+
 interface ICryptoDonations {
 
 /// @notice Campaign struct containing raising deadline, raising goal, its title, and description
@@ -41,7 +45,7 @@ interface ICryptoDonations {
     /**     
      * @dev Emitted when anyone donates.     
      */
-    event Contribution(uint256 indexed campaignId, uint256 indexed amount, address indexed contributor);
+    event Contribution(uint256 indexed campaignId, uint256 indexed amount, address indexed contributor, bool nftMinted);
     
     /**     
      * @dev Emitted when admin withdraws specific amount of funds from a campaign.     
@@ -53,6 +57,12 @@ interface ICryptoDonations {
      */
     // event NFTReceived(address operator, address from, uint256 tokenId, bytes data);
 
+    /**     
+     * @dev Emitted when a admin sets NFT contract address.    
+     */
+    event setGiftNFT(address giftNFTAddress);
+
+    error InvalidAddress();
     error noFundsSet();
     error invalidTimeGoal();
     error emptyTitle();
@@ -63,6 +73,9 @@ interface ICryptoDonations {
     error reentrancyAttempt();
 
     // error invalidNFT();
+
+    function setGiftNFTAddress(address _address) external;
+
 
     function getCampaignSum(uint256 campaignId) external view returns(uint256 sum);
 
@@ -103,21 +116,21 @@ contract CryptoDonations is Ownable, ICryptoDonations {
 /// @dev whitelisted NFT contract address
     // address public whitelistedNftContract;
 
-    DNPT public GiftNFTContract;
+    // DNPT public giftNFTContract;
+    address public giftNFT;
 
     mapping(uint256 => Campaign) public campaigns;
     mapping(uint256 => uint256) private campaignSums;
 
 /// @notice via campaign ID and contributor address, amount contributed to a specific campaign from a specific user can be obtained
     mapping(uint256 => mapping(address => uint256)) private campaignContributions;
+  
 
-    // constructor(address _nftContract){
-    //     whitelistedNftContract = _nftContract;
-    // }
-
-    constructor(){
-        GiftNFTContract = new DNPT();
-
+    modifier validAddress(address _address) {
+        if (_address == address(0)) {
+            revert InvalidAddress();
+        }
+        _;
     }
 
     modifier validFunds(uint256 _funds) {
@@ -177,22 +190,10 @@ contract CryptoDonations is Ownable, ICryptoDonations {
     //     whitelistedNftContract = _nftContract;
     // }
 
-
-// ovo potencijalno u Interface treba da ide kao i sam IERC721Receiver.
-    // function onERC721Received(
-    //     address operator, 
-    //     address from, 
-    //     uint256 tokenId, 
-    //     bytes calldata data) external override returns (bytes4) {
-    //     // if(address(whitelistedNftContract) != msg.sender){
-    //     //     revert invalidNFT();
-    //     // }
-
-    //     // dodati ovde .push u array koji skuplja nft IDeve.
-    //     emit NFTReceived(operator, from, tokenId, data);
-
-    //     return IERC721Receiver.onERC721Received.selector;
-    // } 
+    function setGiftNFTAddress(address _address) public override onlyOwner validAddress(_address) {
+        giftNFT = _address;
+        emit setGiftNFT(_address);
+    }
 
     /// @notice Returns current available raised funds for a specific campaign.
     function getCampaignSum(uint256 campaignId) public view override validCampaign(campaignId) returns(uint256 sum){
@@ -237,14 +238,15 @@ contract CryptoDonations is Ownable, ICryptoDonations {
     /// @param campaignId ID of campaign intended to receive sent ETH
     function donate(uint256 campaignId) external payable override validFunds(msg.value) validCampaign(campaignId) activeCampaign(campaignId) {
         campaignSums[campaignId] += msg.value;
-
+        bool minted;
         if(campaignContributions[campaignId][msg.sender] == 0) {
-            GiftNFTContract.mintToken(msg.sender);
+        //    minted = giftNFTContract.mintToken(msg.sender);
+        minted = IDNPT(giftNFT).mintToken(msg.sender);
         }
 
         campaignContributions[campaignId][msg.sender] += msg.value;
 
-        emit Contribution(campaignId, msg.value, msg.sender);
+        emit Contribution(campaignId, msg.value, msg.sender, minted);
 
         // razmisljam se ovde da dodam jedan bool koji ce biti true ako se opali goalmet event - da se ne bi opalio event svaku put kad se doda suma koja opet prelazi cilj
         if(campaignSums[campaignId] >= campaigns[campaignId].moneyRaisedGoal) {
@@ -256,7 +258,7 @@ contract CryptoDonations is Ownable, ICryptoDonations {
     /// @param campaignId ID of campaign intended to withdraw ETH from
     /// @param _to address intended to receive funds
     /// @param _amount amount of ETH to withdraw
-    function withdraw(uint256 campaignId, address payable _to, uint256 _amount) external payable override onlyOwner validCampaign(campaignId) inactiveCampaign(campaignId) noReentrant{
+    function withdraw(uint256 campaignId, address payable _to, uint256 _amount) external payable override onlyOwner validCampaign(campaignId) inactiveCampaign(campaignId) validAddress(_to) noReentrant{
         uint256 sum = campaignSums[campaignId];
         if(_amount > sum) {
             revert withdrawAmountTooHigh();
