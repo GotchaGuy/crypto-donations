@@ -23,9 +23,16 @@ async function main() {
   const CryptoDonations = await ethers.getContractFactory("CryptoDonations");
   const cryptoDonations = await CryptoDonations.deploy();
 
+  const DNPT = await ethers.getContractFactory("DNPT");
+  const dnpt = await DNPT.deploy(cryptoDonations.address);
+
+  await cryptoDonations.setGiftNFTAddress(dnpt.address);
+
   await cryptoDonations.deployed();
 
   console.log("CrpytoDonations deployed to: ", cryptoDonations.address);
+  console.log("DNPT deployed to: ", dnpt.address);
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere
