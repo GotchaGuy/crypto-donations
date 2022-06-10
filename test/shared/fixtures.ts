@@ -33,6 +33,8 @@ export const unitCryptoDonationsFixture: Fixture<UnitCryptoDonationsFixtureType>
 
   const mockGiftNFT = await deployMockGiftNFT(deployer);
 
+  await cryptoDonations.setGiftNFTAddress(mockGiftNFT.address);
+
   return { cryptoDonations, mockGiftNFT };
 };
 

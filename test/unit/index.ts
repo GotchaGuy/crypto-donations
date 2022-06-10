@@ -2,14 +2,16 @@ import { waffle } from "hardhat";
 import { unitCryptoDonationsFixture, unitDNPTFixture } from "../shared/fixtures";
 import { Mocks, Signers } from "../shared/types";
 
-import { shouldDeployCD } from "./CryptoDonations/CryptoDonationsShouldBeDeployed"; 
-import { shouldCreateCampaign } from "./CryptoDonations/CryptoDonationsShouldCreateCampaign"; 
-import { shouldChangeCampaign } from "./CryptoDonations/CryptoDonationsShouldChangeCampaign"; 
-import { shouldReceiveETH } from "./CryptoDonations/CryptoDonationsShouldReceiveETH";
-import { shouldWithdrawETH } from "./CryptoDonations/CryptoDonationsShouldWithdrawETH";
+import { shouldDeployCD } from "./CryptoDonations/CryptoDonationsShouldBeDeployed.spec"; 
+import { shouldCreateCampaign } from "./CryptoDonations/CryptoDonationsShouldCreateCampaign.spec"; 
+import { shouldChangeCampaign } from "./CryptoDonations/CryptoDonationsShouldChangeCampaign.spec"; 
+import { shouldSetGiftNFT } from "./CryptoDonations/CryptoDonationsShouldSetGiftNFT.spec";
+import { shouldReceiveETH } from "./CryptoDonations/CryptoDonationsShouldReceiveETH.spec";
+import { shouldWithdrawETH } from "./CryptoDonations/CryptoDonationsShouldWithdrawETH.spec";
 
-import { shouldDeployDNPT } from "./DNPT/DNPTShouldBeDeployed"; 
-import { shouldMintNewNFTs } from "./DNPT/DNPTShouldMintNewNFTs";
+import { shouldDeployDNPT } from "./DNPT/DNPTShouldBeDeployed.spec"; 
+import { shouldMintNewNFTs } from "./DNPT/DNPTShouldMintNewNFTs.spec";
+import { shouldChangeWhitelistedNFTAddress } from "./DNPT/DNPTShouldChangeWhitelistedNFTAddress.spec";
 
 describe(`Unit tests`, async () => {
   before(async function () {
@@ -31,7 +33,6 @@ describe(`Unit tests`, async () => {
       const { cryptoDonations, mockGiftNFT } = await this.loadFixture(unitCryptoDonationsFixture);
 
       this.cryptoDonations = cryptoDonations;
-
       this.mocks = {} as Mocks;
       this.mocks.mockGiftNFT = mockGiftNFT;
     });
@@ -39,8 +40,9 @@ describe(`Unit tests`, async () => {
     shouldDeployCD();
     shouldCreateCampaign();
     shouldChangeCampaign();
-    // shouldReceiveETH();
-    // shouldWithdrawETH();
+    shouldSetGiftNFT();
+    shouldReceiveETH();
+    shouldWithdrawETH();
 
   });
 
@@ -55,6 +57,7 @@ describe(`Unit tests`, async () => {
     });
 
     shouldDeployDNPT();
+    shouldChangeWhitelistedNFTAddress();
     shouldMintNewNFTs();
   });
 });

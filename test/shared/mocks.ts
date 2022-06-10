@@ -8,19 +8,15 @@ import CryptoDonations from "../../artifacts/contracts/CryptoDonations.sol/Crypt
 export async function deployMockGiftNFT(deployer: Signer): Promise<MockContract> {
   const giftnft: MockContract = await waffle.deployMockContract(deployer, GiftNFT.abi);
 
-  // await erc721.mock.name.returns(`Donypto Tokens`);
-  // await erc721.mock.symbol.returns(`DNPT`);
-  // await erc721.mock._safeMint.returns(true);
-  // await giftnft.mock.mintToken.returns(true);
-
+  await giftnft.mock.name.returns(`Donypto Tokens`);
+  await giftnft.mock.symbol.returns(`DNPT`);
+  await giftnft.mock.mintToken.returns(true);
 
   return giftnft;
 }
-// mockCryptoDonations
 
 export async function deployMockCryptoDonations(deployer: Signer): Promise<MockContract> {
   const cryptoDonations: MockContract = await waffle.deployMockContract(deployer, CryptoDonations.abi);
-
 
   return cryptoDonations;
 }

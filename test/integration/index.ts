@@ -2,8 +2,8 @@ import { waffle } from "hardhat";
 import { integrationsFixture } from "../shared/fixtures";
 import { Mocks, Signers } from "../shared/types";
 
-import { shouldDeploy } from "./CryptoDonations/CryptoDonationsShouldBeDeployed";
-import { shouldMintNFTs } from "./CryptoDonations/CryptoDonationsShouldMintNFTs";
+import { shouldDeploy } from "./CryptoDonations/CryptoDonationsShouldBeDeployed.spec";
+import { shouldMintNFTs } from "./CryptoDonations/CryptoDonationsShouldMintNFTs.spec";
 
 
 describe(`Integration tests`, async () => {

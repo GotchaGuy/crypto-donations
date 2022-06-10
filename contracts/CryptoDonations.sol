@@ -3,9 +3,8 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+// import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
-// import { DNPTABI } from "../artifacts/contracts/DNPT.sol/DNPT.json";
 import "./DNPT.sol";
 
 interface IDNPT {
@@ -71,15 +70,9 @@ interface ICryptoDonations {
     error withdrawAmountTooHigh();
     error reentrancyAttempt();
 
-    // error invalidNFT();
-
     function setGiftNFTAddress(address _address) external;
 
-
     function getCampaignSum(uint256 campaignId) external view returns(uint256 sum);
-
-    // function changeWhitelistedNFT(address _nftContract) external;
-
 
     function createCampaign(
         uint256 _timeGoal,
@@ -178,7 +171,6 @@ contract CryptoDonations is Ownable, ICryptoDonations {
         if (locked) {
             revert reentrancyAttempt();
         }
-        // require(!locked, "No re-entrancy");
         locked = true;
         _;
         locked = false;

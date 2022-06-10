@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { constants } from "ethers";
+import { BigNumber, constants } from "ethers";
 import { ethers } from "hardhat";
 
 export const shouldCreateCampaign = (): void => {
@@ -7,13 +7,16 @@ export const shouldCreateCampaign = (): void => {
   context(`Campaign creation`, async function () {
     // timeGoal is 1 week from now = current time in seconds + one week in seconds(604800s)
     const oneWeek = 604800;
-    // const blockNumBefore = await ethers.provider.getBlockNumber();
-    // const currentTime = (await ethers.provider.getBlock(blockNumBefore)).timestamp;
-    const currentTime = Math.round(new Date().getTime() / 1000);
-    const timeGoal = currentTime + oneWeek;
+    let timeGoal: BigNumber;
     const moneyRaisedGoal = 5000;
     const title: string = "May Charity Campaign";
-    const description: string = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum ligula felis, tristique at sollicitudin et, tempus non enim. Vivamus tincidunt pharetra lectus nec ornare. Curabitur mauris ex, mattis vel enim quis, venenatis tempor dolor. Duis efficitur quam ut enim gravida vestibulum. Aliquam ullamcorper, libero non accumsan ornare, justo nisi semper mauris, non tempor diam risus non neque. Cras et aliquam sapien. Curabitur non purus bibendum, auctor elit a, ultricies magna. Duis nec nisi vehicula augue blandit suscipit vitae in ante. Aliquam aliquet elit dolor, mattis bibendum quam laoreet vitae. Mauris pharetra elit et consectetur accumsan";
+    const description: string = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
+
+    before(async function(){
+      const latestBlock = await ethers.provider.getBlock('latest');
+      const currentTime = latestBlock.timestamp;
+      timeGoal = BigNumber.from(currentTime + oneWeek);
+     })
 
     it("Should create a campaign", async function () {
         expect(await this.cryptoDonations.createCampaign(
