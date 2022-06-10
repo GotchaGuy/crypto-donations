@@ -7,8 +7,10 @@ export const shouldMintNFTs = (): void => {
   context(`Minting NFTs for campaign contributors`, async function () {
     // timeGoal is 1 week from now = current time in seconds + one week in seconds(604800s)
     const oneWeek = 604800;
-    const blockNumBefore = await ethers.provider.getBlockNumber();
-    const currentTime = (await ethers.provider.getBlock(blockNumBefore)).timestamp;
+    // const blockNumBefore = await ethers.provider.getBlockNumber();
+    // const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+    // const currentTime = blockBefore.timestamp;
+    const currentTime = Math.round(new Date().getTime() / 1000);
     const timeGoal = currentTime + oneWeek;
     const moneyRaisedGoal = 5000;
     const title: string = "May Charity Campaign";
@@ -17,19 +19,15 @@ export const shouldMintNFTs = (): void => {
 
 
     it(`Contributor should receive NFT for first time donating to campaign`, async function () {
-      const createCampaignTx = await this.cryptoDonations.createCampaign(
+      await this.cryptoDonations.createCampaign(
         timeGoal, moneyRaisedGoal, title, description
       );
   
-      await createCampaignTx.wait();
-
       expect(await this.dnpt.balanceOf(this.signers.alice.address)).to.equal(constants.Zero);
 
-      const donateTx = await this.cryptoDonations.connect(this.signers.alice).donate(
+      await this.cryptoDonations.connect(this.signers.alice).donate(
         constants.Zero, { value: ethers.utils.parseEther("1") }
       );
-
-      await donateTx.wait();
 
       expect(await this.dnpt.ownerOf(constants.Zero)).to.equal(this.signers.alice.address);
       expect(await this.dnpt.balanceOf(this.signers.alice.address)).to.equal(constants.One);
@@ -38,39 +36,31 @@ export const shouldMintNFTs = (): void => {
     });
 
     it(`Contributor should not receive another NFT if contributor has already donated to campaign`, async function () {
-      const createCampaignTx = await this.cryptoDonations.createCampaign(
+      await this.cryptoDonations.createCampaign(
         timeGoal, moneyRaisedGoal, title, description
       );
   
-      await createCampaignTx.wait();
-
       expect(await this.dnpt.balanceOf(this.signers.alice.address)).to.equal(constants.Zero);
 
-      const donateTx1 = await this.cryptoDonations.connect(this.signers.alice).donate(
+      await this.cryptoDonations.connect(this.signers.alice).donate(
         constants.Zero, { value: ethers.utils.parseEther("1") }
       );
-
-      await donateTx1.wait();
 
       expect(await this.dnpt.balanceOf(this.signers.alice.address)).to.equal(constants.One);
 
-      const donateTx2 = await this.cryptoDonations.connect(this.signers.alice).donate(
+      await this.cryptoDonations.connect(this.signers.alice).donate(
         constants.Zero, { value: ethers.utils.parseEther("1") }
       );
-
-      await donateTx2.wait();
 
       expect(await this.dnpt.balanceOf(this.signers.alice.address)).to.equal(constants.One);
 
     });
 
-    it("Gift NFT(DNPT) Contract ahould emit event when contributor donates to campaign on CryptoDonations Contract", async function () {
-      const createCampaignTx = await this.cryptoDonations.createCampaign(
+    it("Gift NFT(DNPT) should emit event when contributor donates to campaign on CryptoDonations", async function () {
+      await this.cryptoDonations.createCampaign(
         timeGoal, moneyRaisedGoal, title, description
       );
   
-      await createCampaignTx.wait();
-
       expect(await this.cryptoDonations.connect(this.signers.alice).donate(
         constants.Zero, { value: ethers.utils.parseEther("1") }
       )).to.emit(this.dnpt, `MintedNFT`)
@@ -78,18 +68,14 @@ export const shouldMintNFTs = (): void => {
 
     });
 
-    it("CryptoDonations Contract should emit minted false when contributor has already donated to campaign", async function () {
-      const createCampaignTx = await this.cryptoDonations.createCampaign(
+    it("CryptoDonations should emit minted false when contributor has already donated to campaign", async function () {
+      await this.cryptoDonations.createCampaign(
         timeGoal, moneyRaisedGoal, title, description
       );
   
-      await createCampaignTx.wait();
-
-      const donateTx1 = await this.cryptoDonations.connect(this.signers.alice).donate(
+      await this.cryptoDonations.connect(this.signers.alice).donate(
         constants.Zero, { value: ethers.utils.parseEther("1") }
       );
-
-      await donateTx1.wait();
 
       expect(await this.cryptoDonations.connect(this.signers.alice).donate(
         constants.Zero, { value: ethers.utils.parseEther("1") }

@@ -8,9 +8,5 @@ export const shouldDeployDNPT = (): void => {
       expect(this.dnpt.address).to.be.properAddress;
     });
 
-    // za integration test testirati da li je admin adresa DNPTa zapravo adresa CDa
-    // it(`Owner address is deployer address`, async function () {
-    //   expect(await this.dnpt.owner()).is.equal(this.cryptoDonations.address);
-    // });
   });
 };

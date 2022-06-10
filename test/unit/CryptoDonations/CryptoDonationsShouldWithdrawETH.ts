@@ -8,8 +8,9 @@ export const shouldWithdrawETH = (): void => {
 
     // timeGoal is 1 week from now = current time in seconds + one week in seconds(604800s)
     const oneWeek = 604800;
-    const blockNumBefore = await ethers.provider.getBlockNumber();
-    const currentTime = (await ethers.provider.getBlock(blockNumBefore)).timestamp;
+    // const blockNumBefore = await ethers.provider.getBlockNumber();
+    // const currentTime = (await ethers.provider.getBlock(blockNumBefore)).timestamp;
+    const currentTime = Math.round(new Date().getTime() / 1000);
     const timeGoal = currentTime + oneWeek;
     const moneyRaisedGoal = 5000;
     const title: string = "May Charity Campaign";
@@ -18,21 +19,16 @@ export const shouldWithdrawETH = (): void => {
 
     it("Should withdraw funds from campaign to address", async function () {
 
-      const createCampaignTx = await this.cryptoDonations.createCampaign(
+      await this.cryptoDonations.createCampaign(
         timeGoal, moneyRaisedGoal, title, description
       );
   
-      await createCampaignTx.wait();
-
-      const donateFundsTx1 = await this.cryptoDonations.connect(this.signers.alice).donate(
+      await this.cryptoDonations.connect(this.signers.alice).donate(
         constants.Zero, { value: ethers.utils.parseEther("1") }
       );
 
       const aliceBalanceBefore = ethers.utils.formatUnits(await this.signers.alice.getBalance(), "ether");  
       console.log(aliceBalanceBefore);
-
-
-      await donateFundsTx1.wait();
 
       //has to be inactive campaign in order to work -> current time has to be after the timeGoal
       await ethers.provider.send("evm_increaseTime", [oneWeek]); // add one week worth of seconds
@@ -50,17 +46,13 @@ export const shouldWithdrawETH = (): void => {
     });
 
     it("Should revert if campaign is active", async function () {
-      const createCampaignTx = await this.cryptoDonations.createCampaign(
+      await this.cryptoDonations.createCampaign(
         timeGoal, moneyRaisedGoal, title, description
       );
   
-      await createCampaignTx.wait();
-
-      const donateFundsTx1 = await this.cryptoDonations.connect(this.signers.alice).donate(
+      await this.cryptoDonations.connect(this.signers.alice).donate(
         constants.Zero, { value: ethers.utils.parseEther("1") }
       );
-
-      await donateFundsTx1.wait();
 
       //has to be inactive campaign in order to work
       await expect(this.cryptoDonations.withdraw(

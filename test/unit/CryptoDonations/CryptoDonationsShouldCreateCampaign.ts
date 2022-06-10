@@ -7,8 +7,9 @@ export const shouldCreateCampaign = (): void => {
   context(`Campaign creation`, async function () {
     // timeGoal is 1 week from now = current time in seconds + one week in seconds(604800s)
     const oneWeek = 604800;
-    const blockNumBefore = await ethers.provider.getBlockNumber();
-    const currentTime = (await ethers.provider.getBlock(blockNumBefore)).timestamp;
+    // const blockNumBefore = await ethers.provider.getBlockNumber();
+    // const currentTime = (await ethers.provider.getBlock(blockNumBefore)).timestamp;
+    const currentTime = Math.round(new Date().getTime() / 1000);
     const timeGoal = currentTime + oneWeek;
     const moneyRaisedGoal = 5000;
     const title: string = "May Charity Campaign";
