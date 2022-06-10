@@ -3,9 +3,6 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-// import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-
-import "./DNPT.sol";
 
 interface IDNPT {
         function mintToken(address recipient) external returns(bool minted);
@@ -105,9 +102,6 @@ contract CryptoDonations is Ownable, ICryptoDonations {
 /// @notice boolean for stopping reentrancy during withdrawal
     bool internal locked;
 
-/// @dev whitelisted NFT contract address
-    // address public whitelistedNftContract;
-
     // DNPT public giftNFTContract;
     address public giftNFT;
 
@@ -175,11 +169,6 @@ contract CryptoDonations is Ownable, ICryptoDonations {
         _;
         locked = false;
     }
-
-    /// @dev Admin can change address of nft contract that will be providing gift nfts.
-    // function changeWhitelistedNFT(address _nftContract) external override onlyOwner {
-    //     whitelistedNftContract = _nftContract;
-    // }
 
     function setGiftNFTAddress(address _address) public override onlyOwner validAddress(_address) {
         giftNFT = _address;

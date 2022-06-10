@@ -1,7 +1,6 @@
 import { MockContract } from "ethereum-waffle";
 import { Signer } from "ethers";
-import { artifacts, waffle } from "hardhat";
-import { Artifact } from "hardhat/types";
+import { waffle } from "hardhat";
 import GiftNFT from "../../artifacts/contracts/DNPT.sol/DNPT.json";
 import CryptoDonations from "../../artifacts/contracts/CryptoDonations.sol/CryptoDonations.json"
 
