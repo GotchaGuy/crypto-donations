@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
@@ -196,6 +195,8 @@ contract CryptoDonations is Ownable, ICryptoDonations {
     }
 
     /// @notice Returns current available raised funds for a specific campaign.
+    /// @param campaignId ID of the campaign whose sumtotal raised amount (or leftover balance amount on the contract) you want to see
+    /// @return sum sumtotal raised amount of funds for a campaign (or leftover balance amount on the contract)
     function getCampaignSum(uint256 campaignId) public view override validCampaign(campaignId) returns(uint256 sum){
        return campaignSums[campaignId];
     }

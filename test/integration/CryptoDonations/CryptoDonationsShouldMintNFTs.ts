@@ -7,7 +7,8 @@ export const shouldMintNFTs = (): void => {
   context(`Minting NFTs for campaign contributors`, async function () {
     // timeGoal is 1 week from now = current time in seconds + one week in seconds(604800s)
     const oneWeek = 604800;
-    const currentTime = Math.round(new Date().getTime() / 1000);
+    const blockNumBefore = await ethers.provider.getBlockNumber();
+    const currentTime = (await ethers.provider.getBlock(blockNumBefore)).timestamp;
     const timeGoal = currentTime + oneWeek;
     const moneyRaisedGoal = 5000;
     const title: string = "May Charity Campaign";
@@ -63,7 +64,37 @@ export const shouldMintNFTs = (): void => {
 
     });
 
-    it(`lorem ipsum`, async function () {
+    it("Gift NFT(DNPT) Contract ahould emit event when contributor donates to campaign on CryptoDonations Contract", async function () {
+      const createCampaignTx = await this.cryptoDonations.createCampaign(
+        timeGoal, moneyRaisedGoal, title, description
+      );
+  
+      await createCampaignTx.wait();
+
+      expect(await this.cryptoDonations.connect(this.signers.alice).donate(
+        constants.Zero, { value: ethers.utils.parseEther("1") }
+      )).to.emit(this.dnpt, `MintedNFT`)
+      .withArgs(constants.Zero, this.signers.alice);
+
+    });
+
+    it("CryptoDonations Contract should emit minted false when contributor has already donated to campaign", async function () {
+      const createCampaignTx = await this.cryptoDonations.createCampaign(
+        timeGoal, moneyRaisedGoal, title, description
+      );
+  
+      await createCampaignTx.wait();
+
+      const donateTx1 = await this.cryptoDonations.connect(this.signers.alice).donate(
+        constants.Zero, { value: ethers.utils.parseEther("1") }
+      );
+
+      await donateTx1.wait();
+
+      expect(await this.cryptoDonations.connect(this.signers.alice).donate(
+        constants.Zero, { value: ethers.utils.parseEther("1") }
+      )).to.emit(this.cryptoDonations, `Contributor`)
+      .withArgs(constants.Zero, 1000000000000000000, this.signers.alice, false);
 
     });
 
