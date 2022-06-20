@@ -27,10 +27,8 @@ export const shouldMintNewNFTs = (): void => {
 
       const contributorAddress:string = this.signers.alice.address;
 
-      const mintTokenTx = await this.dnpt.connect(this.signers.garry)
+      await this.dnpt.connect(this.signers.garry)
         .mintToken(contributorAddress);
-
-      mintTokenTx.wait(); 
 
       expect(await this.dnpt.ownerOf(constants.Zero)).to.equal(contributorAddress);
     });

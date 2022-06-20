@@ -28,7 +28,7 @@ export const shouldReceiveETH = (): void => {
         constants.Zero, { value: ethers.utils.parseEther("1") }
       ))
       .to.emit(this.cryptoDonations, `Contributor`)
-        .withArgs(constants.Zero, 1000000000000000000, this.signers.alice, true);
+        .withArgs(constants.Zero, ethers.utils.parseEther("1"), this.signers.alice, true);
     });
 
     it("Should revert if campaign is inactive", async function () {
